@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.IO;
 
 public class LayerUIController : MonoBehaviour
 {
@@ -16,7 +17,8 @@ public class LayerUIController : MonoBehaviour
 	public float button_spacing;
 	public int num_buttons;
 
-	private int[,] layer;
+	private int[,] layer, zero_layer;
+	private List<int[,]> all_layers;
 	private Button[,] buttons;
 	private int cur_layer;
 
@@ -24,9 +26,11 @@ public class LayerUIController : MonoBehaviour
     void Start()
     {
 
+
     	cur_layer = 0;
     	layer = new int[num_buttons*2 - 1, num_buttons*2 - 1];
     	buttons = new Button[num_buttons*2 - 1, num_buttons*2 - 1];
+    	all_layers = new List<int[,]>();
 
     	//float width = background_panel.GetComponent<RectTransform>().sizeDelta[0];
     	float bk_dim = background_panel.GetComponent<RectTransform>().sizeDelta[1];
@@ -42,6 +46,12 @@ public class LayerUIController : MonoBehaviour
     	//vb_width = 
     	//vb_width = (width - button_spacing) / (vb_width + button_spacing);
         
+        for(int x = 0; x < num_buttons*2 - 1; x++) {
+            for(int y = 0; y < num_buttons*2 - 1; y++) {
+                layer[x,y] = 0;
+            }
+        }
+
         for(int x = 0; x < num_buttons; x++) {
         	for(int y = 0; y < num_buttons; y++) {
         		GameObject g = Instantiate(voxel_button_prefab, new Vector3(0, 0, 0), Quaternion.identity);
@@ -60,6 +70,8 @@ public class LayerUIController : MonoBehaviour
         		buttons[x*2, y*2]  = g.GetComponent<Button>();
         		g.GetComponent<Button>().onClick.AddListener(() => { addVoxel(tx,ty); });
         		layer[x*2, y*2] = 0;
+                //layer[x*2, y*2 + 1] = 0;
+
         	}
         }
 
@@ -84,13 +96,9 @@ public class LayerUIController : MonoBehaviour
             }
         }
 
-        odd_button_holder.SetActive(false);
-    }
+        zero_layer = layer.Clone() as int[,];
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        odd_button_holder.SetActive(false);
     }
 
     public void addVoxel(int x, int y) {
@@ -102,15 +110,9 @@ public class LayerUIController : MonoBehaviour
     }
 
     public void addLayer() {
-        int even_odd = 0;
-        if (cur_layer % 2 == 1) {
-            even_odd = 1;
-            odd_button_holder.SetActive(false);
-            even_button_holder.SetActive(true);
-        } else {
-            even_button_holder.SetActive(false);
-            odd_button_holder.SetActive(true);
-        }
+        int even_odd = cur_layer % 2;
+
+        int voxels_added = 0;
 
     	for(int x = 0; x < num_buttons - even_odd; x++) {
         	for(int y = 0; y < num_buttons - even_odd; y++) {
@@ -126,12 +128,59 @@ public class LayerUIController : MonoBehaviour
 	        		g.transform.localPosition = new Vector3(x + 0.5f*even_odd, cur_layer*0.5f + 0.5f, y + 0.5f*even_odd);
 	        		//g.transform.localScale = new Vector3(1,1,1);
 	        		//g.GetComponent<RectTransform>().localEulerAngles = new Vector3(0,0,0);
+	        		voxels_added++;
 	        	}
 	        	setColor(buttons[x*2 + even_odd,y*2 + even_odd], Color.white);
-	        	layer[x*2 + even_odd,y*2 + even_odd] = 0;
+	        	//layer[x*2 + even_odd,y*2 + even_odd] = 0;
         	}
         }
-        cur_layer++;
+        if (voxels_added > 0) {
+	        all_layers.Add(layer);
+	        layer = zero_layer.Clone() as int[,];
+	        cur_layer++;
+	        if (even_odd == 1) {
+	            odd_button_holder.SetActive(false);
+	            even_button_holder.SetActive(true);
+	        } else {
+	            even_button_holder.SetActive(false);
+	            odd_button_holder.SetActive(true);
+	        }
+	    }
+    }
+
+    public void exportModel() {
+    	StreamWriter writer = new StreamWriter("voxel_structure.csv");
+ 		int n = 0;
+        int n2 = 0;
+ 		foreach(int[,] l in all_layers) {
+ 			string state = "";
+ 			for (int x = 0; x < num_buttons*2 -1; x++) {
+ 				for (int y = 0; y < num_buttons*2 -1; y++) {
+ 					//state = state + l[x,y] + ",";
+                    if (x == 0 && y == 0) {
+                        writer.Write(l[x,y]);
+                    } else {
+                        writer.Write("," + l[x,y]);
+                    }
+                    if (l[x,y] == 0) {
+                        n++;
+                    }
+                    if (l[x,y] == 1) {
+                        n2++;
+                    }
+ 				}
+ 			}
+            writer.Write("\n");
+            print(n);
+            print(n2);
+            //print(state.Length);
+ 			//state = state.Substring(0,state.Length - 1);
+ 			//writer.WriteLine(state);
+ 		}
+        // /writer.WriteLine("");
+        writer.Close();
+        //writer.WriteLine("Inventory,OnlyX");
+
     }
 
     private void setColor(Button b, Color c) {
