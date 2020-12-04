@@ -48,7 +48,7 @@ public class LayerUIController : MonoBehaviour
         
         for(int x = 0; x < num_buttons*2 - 1; x++) {
             for(int y = 0; y < num_buttons*2 - 1; y++) {
-                layer[x,y] = 0;
+                layer[x,y] = -1;
             }
         }
 
@@ -69,7 +69,7 @@ public class LayerUIController : MonoBehaviour
         		int ty = y*2;
         		buttons[x*2, y*2]  = g.GetComponent<Button>();
         		g.GetComponent<Button>().onClick.AddListener(() => { addVoxel(tx,ty); });
-        		layer[x*2, y*2] = 0;
+        		layer[x*2, y*2] = -1;
                 //layer[x*2, y*2 + 1] = 0;
 
         	}
@@ -92,7 +92,7 @@ public class LayerUIController : MonoBehaviour
                 int ty = y*2 + 1;
                 buttons[x*2 + 1, y*2 + 1]  = g.GetComponent<Button>();
                 g.GetComponent<Button>().onClick.AddListener(() => { addVoxel(tx,ty); });
-                layer[x*2 + 1, y*2 + 1] = 0;
+                layer[x*2 + 1, y*2 + 1] = -1;
             }
         }
 
@@ -129,7 +129,9 @@ public class LayerUIController : MonoBehaviour
 	        		//g.transform.localScale = new Vector3(1,1,1);
 	        		//g.GetComponent<RectTransform>().localEulerAngles = new Vector3(0,0,0);
 	        		voxels_added++;
-	        	}
+	        	} else {
+                    layer[x*2 + even_odd,y*2 + even_odd] = 0;
+                }
 	        	setColor(buttons[x*2 + even_odd,y*2 + even_odd], Color.white);
 	        	//layer[x*2 + even_odd,y*2 + even_odd] = 0;
         	}

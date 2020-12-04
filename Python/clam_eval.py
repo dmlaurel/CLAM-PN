@@ -11,30 +11,59 @@ vox_dim = 10
 def evaluatePNStructure(pn, commands):
 	total_vox = vox_dim * 2 - 1
 
+	f1 = 0
+	f2 = 0
+	a1 = 0
+	a2 = 0
 	old_s = pn.getState()
 	for c in commands:
-		print(len(c))
+		#print(pn.getState()[250:360])
+		#print(c)
 		for i in range(0,total_vox): # row
 			for j in range(0,total_vox): # col
 				ind = total_vox * i + j
 				if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1): # even or odd layer
-					t1 = pn.transitions[ind*4]
-					t2 = pn.transitions[ind*4 + 1]
-					#print(ind*4 + 2)
-					t3 = pn.transitions[ind*4 + 2]
-					t4 = pn.transitions[ind*4 + 3]
+					#t1 = pn.transitions[pn.getHash(ind, 0)]
+					#t2 = pn.transitions[pn.getHash(ind, 1)]
+					#t3 = pn.transitions[pn.getHash(ind, 2)]
+					#t4 = pn.transitions[pn.getHash(ind, 3)]
 
-					#print(ind)
+					#t5 = pn.transitions[pn.getHash(ind, 4)]
+					#t6 = pn.transitions[pn.getHash(ind, 5)]
+					#t7 = pn.transitions[pn.getHash(ind, 6)]
+					#t8 = pn.transitions[pn.getHash(ind, 7)]
+				
 					if c[ind] == 1:
-						pn.attemptTransition(t1.ind)
-						pn.attemptTransition(t2.ind)
-					else:
-						pn.attemptTransition(t3.ind)
-						pn.attemptTransition(t4.ind)
+						f1 = f1 + 1
+						available_transitions = []
+						for n in range(0, pn.transition_per_event):
+							t = pn.transitions[pn.getHash(ind, n)]
+							if pn.checkTransition(t, '1'):
+								available_transitions.append(t)
+
+						for n in range(0, len(available_transitions)):
+							pn.fireTransition(available_transitions[n], '1')
+
+					elif c[ind] == 0:
+						f2 = f2 + 1
+						available_transitions = []
+						for n in range(0, pn.transition_per_event):
+							t = pn.transitions[pn.getHash(ind, n)]
+							if pn.checkTransition(t, '0'):
+								available_transitions.append(t)
+
+						for n in range(0, len(available_transitions)):
+							pn.fireTransition(available_transitions[n], '0')
+		print(str(f1) + " " + str(f2))
+		f1 = 0
+		f2 = 0
 		s = pn.getState()
-		#print(pn.getState()[0::3])
+		#printState(pn.getState()[1::3])
+		
 		printState(pn.getState()[0::3] - old_s[0::3])
+		print()
 		old_s = s
+		#print(pn.getState()[250:])
 		#print(s[s < 0])
 	#print(pn.getState()[0::3])
 
@@ -47,7 +76,7 @@ def printState(s):
 			o = o + str(s[i*19 + j]) + ", "
 		print(o)
 
-def createPNStructure():
+def createPNStructure_1():
 	total_vox = vox_dim * 2 - 1
 
 	pn = PNStruct(vox_dim)
@@ -70,50 +99,192 @@ def createPNStructure():
 					x0[ind*3 + 1] = 4
 					x0[ind*3 + 2] = 0	
 
-				p1 = PNPlace(ind*3, x0[ind*3])
-				p2 = PNPlace(ind*3 + 1, x0[ind*3 + 1])
-				p3 = PNPlace(ind*3 + 2, x0[ind*3 + 2])
+				p1 = PNPlace(ind, 0, x0[ind*3])
+				p2 = PNPlace(ind, 1, x0[ind*3 + 1])
+				p3 = PNPlace(ind, 2, x0[ind*3 + 2])
 
 				pn.addPlaces([p1, p2, p3])
 
-				t1 = PNTransition(ind*4)
-				places = {ind*3:1, ind*3+2:4, ind*3+2:-1, ind*3+1:-3}
-				t1.places = places
+				# ADDITION TRANSITIONS
 
-				t2 = PNTransition(ind*4 + 1)
-				places = {ind*3:1, ind*3+2:4, ind*3+1:-4}
-				t2.places = places
+				t1 = PNTransition(ind, 0)
+				#places = {pn.getHash(ind,0):1, pn.getHash(ind,2):4, pn.getHash(ind,2):-1, pn.getHash(ind,1):-3}
+				t1.addPlace(pn.getHash(ind,0), 1)
+				t1.addPlace(pn.getHash(ind,2), 4)
+				t1.addPlace(pn.getHash(ind,2), -1)
+				t1.addPlace(pn.getHash(ind,1), -3)
+				#t1.places = places
 
-				t3 = PNTransition(ind*4 + 2)
-				places = {ind*3+1:-1, ind*3+2:-3, ind*3+2:4}
-				t3.places = places
+				t2 = PNTransition(ind, 1)
+				#places = {pn.getHash(ind,0):1, pn.getHash(ind,2):4, pn.getHash(ind,1):-4}
+				t2.addPlace(pn.getHash(ind,0), 1)
+				t2.addPlace(pn.getHash(ind,2), 4)
+				t2.addPlace(pn.getHash(ind,1), -4)
+				#t2.places = places
 
-				t4 = PNTransition(ind*4 + 3)
-				places = {ind*3+1:-2, ind*3+2:-2, ind*3+2:4}
-				t4.places = places
+				t3 = PNTransition(ind, 2)
+				#places = {pn.getHash(ind,1):-1, pn.getHash(ind,2):-3, pn.getHash(ind,2):4}
+				t3.addPlace(pn.getHash(ind,1), -1)
+				t3.addPlace(pn.getHash(ind,2), -3)
+				t3.addPlace(pn.getHash(ind,2), 4)
+				#t3.places = places
+
+				t4 = PNTransition(ind, 3)
+				#places = {pn.getHash(ind,1):-2, pn.getHash(ind,2):-2, pn.getHash(ind,2):4}
+				t4.addPlace(pn.getHash(ind,1), -2)
+				t4.addPlace(pn.getHash(ind,2), -2)
+				t4.addPlace(pn.getHash(ind,2), -4)
+
+				# NO ACTION TRANSITIONS
+
+				t5 = PNTransition(ind, 4)
+				#places = {pn.getHash(ind,1):-1, pn.getHash(ind,2):-3, pn.getHash(ind,2):4}
+				t5.addPlace(pn.getHash(ind,1), -4)
+				t5.addPlace(pn.getHash(ind,2), 4)
+				#t3.places = places
+
+				t6 = PNTransition(ind, 5)
+				#places = {pn.getHash(ind,1):-2, pn.getHash(ind,2):-2, pn.getHash(ind,2):4}
+				t6.addPlace(pn.getHash(ind,1), -3)
+				t6.addPlace(pn.getHash(ind,2), -1)
+				t6.addPlace(pn.getHash(ind,2), 4)
+
+				t7 = PNTransition(ind, 6)
+				#places = {pn.getHash(ind,1):-2, pn.getHash(ind,2):-2, pn.getHash(ind,2):4}
+				t7.addPlace(pn.getHash(ind,1), -2)
+				t7.addPlace(pn.getHash(ind,2), -2)
+				t7.addPlace(pn.getHash(ind,2), 4)
+
+				t8 = PNTransition(ind, 7)
+				#places = {pn.getHash(ind,1):-2, pn.getHash(ind,2):-2, pn.getHash(ind,2):4}
+				t8.addPlace(pn.getHash(ind,1), -1)
+				t8.addPlace(pn.getHash(ind,2), -3)
+				t8.addPlace(pn.getHash(ind,2), 4)
+				#t4.places = places
 
 				if (i > 0 and j > 0):
 					ind_sub = total_vox * (i-1) + j - 1
-					t1.places[ind_sub*3 + 1] = 1
-					t2.places[ind_sub*3 + 1] = 1
+					t1.addPlace(pn.getHash(ind_sub,1),1)
+					t2.addPlace(pn.getHash(ind_sub,1), 1)
+					t1.addPlace(pn.getHash(ind_sub,2), -1)
+					t2.addPlace(pn.getHash(ind_sub,2), -1)
 
 				if i < total_vox - 1 and j < total_vox - 1:
 					ind_sub = total_vox * (i+1) + j + 1
-					t1.places[ind_sub*3 + 1] = 1
-					t2.places[ind_sub*3 + 1] = 1
+					t1.addPlace(pn.getHash(ind_sub,1), 1)
+					t2.addPlace(pn.getHash(ind_sub,1), 1)
+					t1.addPlace(pn.getHash(ind_sub,2), -1)
+					t2.addPlace(pn.getHash(ind_sub,2), -1)
 
 				if i > 0 and j < total_vox - 1:
 					ind_sub = total_vox * (i-1) + j + 1
-					t1.places[ind_sub*3 + 1] = 1
-					t2.places[ind_sub*3 + 1] = 1
+					t1.addPlace(pn.getHash(ind_sub,1), 1)
+					t2.addPlace(pn.getHash(ind_sub,1), 1)
+					t1.addPlace(pn.getHash(ind_sub,2), -1)
+					t2.addPlace(pn.getHash(ind_sub,2), -1)
 
 				if i < total_vox - 1 and j > 0:
 					ind_sub = total_vox * (i+1) + j - 1
-					t1.places[ind_sub*3 + 1] = 1
-					t2.places[ind_sub*3 + 1] = 1
+					t1.addPlace(pn.getHash(ind_sub,1), 1)
+					t2.addPlace(pn.getHash(ind_sub,1), 1)
+					t1.addPlace(pn.getHash(ind_sub,2), -1)
+					t2.addPlace(pn.getHash(ind_sub,2), -1)
 
-				pn.addTransitions([t1, t2, t3, t4])
+				pn.addTransitions([t1, t2, t3, t4, t5, t6, t7, t8])
 	return pn
+
+
+def readPNConfig(file_path):
+
+	total_vox = vox_dim * 2 - 1
+
+	pn = PNStruct(vox_dim)
+	x0 = np.zeros(total_vox**2 * 3)
+
+	f = open(file_path, "r")
+	array = []
+	line = f.readline()
+	index = 0
+
+	num_x = 0
+	num_y = 0
+	places_count = 0
+	transitions_count = 0
+
+	for i in range(0,total_vox): # row
+		for j in range(0,total_vox): # col
+			ind = total_vox * i + j
+			if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1): # even or odd layer
+				x0[ind*3] = 0
+				if (i % 2 == 1 and j % 2 == 1):
+					x0[ind*3 + 1] = 0
+					x0[ind*3 + 2] = 4
+				else:
+					x0[ind*3 + 1] = 4
+					x0[ind*3 + 2] = 0
+
+
+				p1 = PNPlace(ind, 0, x0[ind*3])
+				p2 = PNPlace(ind, 1, x0[ind*3 + 1])
+				p3 = PNPlace(ind, 2, x0[ind*3 + 2])
+
+				pn.addPlaces([p1, p2, p3])
+
+
+	#transitions = {}
+	while line:
+		line = line.strip("\n")
+		line = line.replace(' ', '')
+
+		if '#' in line:
+			line = line[0: line.index('#')]
+
+		l = line.split('/')
+
+		if len(line) > 0 and len(line[0]) > 0 and not line[0][0] == '#':
+			print(line)
+			#process lines
+			#for l in line:
+			#l = line
+			if l[0] == "h":
+				if l[1] == "num_x":
+					num_x = int(l[2])
+				if l[1] == "num_y":
+					num_y = int(l[2])
+				if l[1] == "places_count":
+					places_count = int(l[2])
+				if l[1] == "transitions_count":
+					transitions_count = int(l[2])
+					pn.transition_per_event = transitions_count
+
+			if l[0] == "t":
+				for i in range(0,total_vox): # row
+					for j in range(0,total_vox): # col
+						event = total_vox * i + j
+						if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1): # even or odd layer
+							#for n in range(0,transitions_count):
+							t1 = PNTransition(event, int(l[2]), l[1])
+							for n in range(0, len(l) - 3):
+								l[n+3] = l[n+3].replace(']','')
+								l[n+3] = l[n+3].replace('[','')
+								l_sub = l[n+3].split(':')
+								p_ind = l_sub[0].split(',')
+								if (i + int(p_ind[0])) > 0 and (i + int(p_ind[0])) < total_vox and (int(p_ind[1]) + j) > 0 and (int(p_ind[1]) + j) < total_vox:
+									new_event = total_vox * (i + int(p_ind[0])) + int(p_ind[1]) + j
+									t1.addPlace(pn.getHash(new_event, int(p_ind[2])), int(l_sub[1]))
+							pn.addTransitions([t1])
+								#t1.addPlace(pn.getHash(ind, ))
+							#for b in range(0, )
+							#places = {pn.getHash(ind,0):1, pn.getHash(ind,2):4, pn.getHash(ind,2):-1, pn.getHash(ind,1):-3}
+					
+
+		line = f.readline()
+		index += 1
+	f.close()
+
+	return pn
+
+
 #returns an array with the correct voxel commands
 def readVoxelObject(file_path):
 
@@ -136,69 +307,10 @@ def readVoxelObject(file_path):
 	#print(array)
 	return array
 
-def createPetriMatrix():
-
-	#print(A)
-	sub_matrix_self = np.asarray([[1, -3, 3], [1, -4, 4], [0, -1, 1], [0, -2, 2]])
-	#sub_matrix_self = np.asarray([[1, -3, 3], [1, -4, 4], [0, -1, 1], [0, -2, 2]])
-
-	sub_matrix_cross = np.asarray([[0, 1, -1], [0, 1, -1], [0, 0, 0], [0, 0, 0]])
-	#sub_matrix_cross = np.asarray([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]])
-
-	total_vox = vox_dim * 2 - 1
-	#print(total_vox)
-	A = np.zeros((total_vox**2 * 4, total_vox**2 * 3))
-	#print(A.shape)
-	x0 = np.zeros(total_vox**2 * 3)
-	#print(A[0:4,0:3])
-	#sub_matrix_self_edge = np.asarray([[1, -3, 3], [1, -4, 4], [0, -1, 1], [0, -2, 2]])
-	#because no edge exceptions rn, we can only build pyramid-like structures
-	for i in range(0,total_vox): # row
-		for j in range(0,total_vox): # col
-			ind = total_vox * i + j
-			if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1): # even or odd layer
-				x0[ind*3] = 0
-				if (i % 2 == 1 and j % 2 == 1):
-					x0[ind*3 + 1] = 0
-					x0[ind*3 + 2] = 4
-				else:
-					x0[ind*3 + 1] = 4
-					x0[ind*3 + 2] = 0	
-				A[ind*4:ind*4+4,ind*3:ind*3+3] = sub_matrix_self
-				if (i > 0 and j > 0):
-					ind_sub = total_vox * (i-1) + j - 1
-					A[ind_sub*4:ind_sub*4+4,ind*3:ind*3+3] = sub_matrix_cross
-					A[ind*4:ind*4+4,ind_sub*3:ind_sub*3+3] = sub_matrix_cross
-				if i < total_vox - 1 and j < total_vox - 1:
-					ind_sub = total_vox * (i+1) + j + 1
-					#print(A[ind_sub*4:ind_sub*4+4,ind*3:ind*3+3])
-					#print(str(i) + " " + str(j) + " " + str(ind_sub*4))
-					A[ind_sub*4:ind_sub*4+4,ind*3:ind*3+3] = sub_matrix_cross
-					A[ind*4:ind*4+4,ind_sub*3:ind_sub*3+3] = sub_matrix_cross
-				if i > 0 and j < total_vox - 1:
-					ind_sub = total_vox * (i-1) + j + 1
-					A[ind_sub*4:ind_sub*4+4,ind*3:ind*3+3] = sub_matrix_cross
-					A[ind*4:ind*4+4,ind_sub*3:ind_sub*3+3] = sub_matrix_cross
-				if i < total_vox - 1 and j > 0:
-					ind_sub = total_vox * (i+1) + j - 1
-					A[ind_sub*4:ind_sub*4+4,ind*3:ind*3+3] = sub_matrix_cross
-					A[ind*4:ind*4+4,ind_sub*3:ind_sub*3+3] = sub_matrix_cross
-
-			#if i == j:
-			#	A[i*4:i*4+4,j*3:j*3+3] = sub_matrix_self
-				#A[0:4][0:3] = sub_matrix_self
-			#else:
-			#	A[i*4:i*4+4,j*3:j*3+3] = sub_matrix_cross
-	#print(A)
-	#print(x0)
-	return A, x0
 
 commands = readVoxelObject("voxel_structure.csv")
-pn = createPNStructure()
+pn = readPNConfig("pn_template.pn")
+
+
+#pn = createPNStructure_1()
 evaluatePNStructure(pn, commands)
-#print(commands)
-#x0 = createStartState()
-#A, x0 = createPetriMatrix()
-#print(x0)
-#res = runVoxelCommands(x0, commands, A)
-#print(res)
