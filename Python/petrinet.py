@@ -67,13 +67,14 @@ class PNStruct:
 			return False
 		h = self.getHash(event, ind)
 		for key in self.transitions[h].places:
-			#print(str(event) + " " + str(len(self.transitions[h].places[key])) + " " + str( self.transitions[h].places[key][0] ))
+
 			for i in range(0,len(self.transitions[h].places[key])):
 				w = self.transitions[h].places[key][i]
-				#print(str(self.places[key].marks) + " : " + str(w * -1))
-				if (self.places[key].marks < w * -1):
-					fire = False
+				if (w != "r"):
+					w = int(w)
 
+					if (self.places[key].marks < w * -1):
+						fire = False
 		return fire
 
 	def fireTransition(self, tr, mask):
@@ -85,4 +86,8 @@ class PNStruct:
 			#print("fired " + str(event) + " " + str(ind))
 		for key in self.transitions[h].places:
 			for w in self.transitions[h].places[key]:
-				self.places[key].marks += w
+				if w == "r":
+					self.places[key].marks = 0
+				else:
+					w = int(w)
+					self.places[key].marks += w

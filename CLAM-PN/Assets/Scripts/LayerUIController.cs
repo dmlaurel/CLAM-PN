@@ -109,6 +109,38 @@ public class LayerUIController : MonoBehaviour
     	//print("added " + x + " " + y);
     }
 
+
+    public void readVoxelFile(string path) {
+        //read a line, save it to layer, update cur_layer
+        //call addLayer()
+        //repeat
+            //cur_layer = 0;
+            // Create an instance of StreamReader to read from a file.
+            // The using statement also closes the StreamReader.
+            StreamReader sr = new StreamReader(path);
+            
+            string line;
+                // Read and display lines from the file until the end of
+                // the file is reached.
+            while ((line = sr.ReadLine()) != null)
+            {
+                print("line");
+                   //print(line);
+               string[] l = line.Split(',');
+               int n = 0;
+               foreach(string s in l) {
+                    int x = n/19;
+                    int y = n%19;
+                    //print(s + " " + x + " " + y);
+                    layer[x,y] = int.Parse(s);
+                    n++;
+               }
+               addLayer();
+               //cur_layer = cur_layer+1;
+            
+            }
+    }
+
     public void addLayer() {
         int even_odd = cur_layer % 2;
 
