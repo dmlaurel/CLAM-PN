@@ -35,7 +35,7 @@ def evaluatePNStructure(pn, commands):
 				
 					if c[ind] == 1:
 						f1 = f1 + 1
-						fireString("ccass", pn, ind)
+						fireString("ccccassss", pn, ind)
 						#print("marks!")
 						#h1 = pn.getHash(ind, 3)
 						
@@ -399,7 +399,7 @@ def readVoxelObject(file_path):
 
 
 commands = readVoxelObject("voxel_structure.csv")
-pn = readPNConfig("pn_2b2s.pn")
+pn = readPNConfig("pn_2b4s.pn")
 
 
 #pn = createPNStructure_1()
