@@ -1,6 +1,6 @@
 # Voxel-PN
 
-Voxel - Petri Nets
+Voxel - Petri Nets - Version 0.9
 
 Voxel-PN seeks to use the Petri Net concept from the field of Discrete Event Systems to model the behavior of a digital 3D printing system system, and evaluate the reachability of various structures that could be printed.
 
