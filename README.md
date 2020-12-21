@@ -20,4 +20,4 @@ Unity 2019.4.15f1
 ## Running
 "python pn_eval.py" evaluates the patterned Petri Net specified by the filename passed into readPNConfig() inside pn_eval.py with the commands in the file "voxel_structure.csv". It outputs the resulting achievable commands to "voxel_structure_out.csv".
 
-The Unity project (also called Voxel-PN) has only been run in editor mode so far. It exports a command sequence called "voxel_structure.csv" to and imports a command sequence "voxel_structure_out.csv" to it's root directory.
+The Unity project (also called Voxel-PN) has only been run in editor mode so far. It exports a command sequence called "voxel_structure.csv" to and imports a command sequence "voxel_structure_out.csv" from it's root directory.
